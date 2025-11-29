@@ -1,0 +1,86 @@
+                       ┌──────────────────────────────────────────┐
+                       │               User (UI)                  │
+                       │------------------------------------------│
+                       │ • Enters Job Role                        │
+                       │ • Reads Question                         │
+                       │ • Submits Answer                         │
+                       └──────────────────────────────────────────┘
+                                         │
+                                         ▼
+                       ┌──────────────────────────────────────────┐
+                       │              Gradio UI Layer             │
+                       │------------------------------------------│
+                       │ Components:                              │
+                       │  • job_input (Textbox)                   │
+                       │  • start_btn (Button)                    │
+                       │  • question_output (Textbox)             │
+                       │  • response_input (Textbox)              │
+                       │  • evaluate_btn (Button)                 │
+                       │  • feedback_output (Textbox)             │
+                       └──────────────────────────────────────────┘
+                                         │
+                           (1) start_btn.click(job_role)
+                                         │
+                                         ▼
+             ┌────────────────────────────────────────────────────────┐
+             │                start_interview(job_role)               │
+             │--------------------------------------------------------│
+             │ • Calls agent.ask_question(job_role)                  │
+             │ • Sets global current_question                        │
+             │ • Returns "Starting interview..." + first question    │
+             └────────────────────────────────────────────────────────┘
+                                         │
+                                         ▼
+                       ┌──────────────────────────────────────────┐
+                       │         InterviewAgent.ask_question()     │
+                       │-------------------------------------------│
+                       │ • Reads current_question_index            │
+                       │ • Returns next question                   │
+                       │ • Increments index                        │
+                       │ • Resets when out of questions            │
+                       └──────────────────────────────────────────┘
+                                         │
+                                         ▼
+                     ┌──────────────────────────────────────────────┐
+                     │   question_output textbox shows question     │
+                     └──────────────────────────────────────────────┘
+                                         │
+                               (2) User submits answer
+                                         │
+                                         ▼
+             ┌────────────────────────────────────────────────────────┐
+             │               evaluate_answer(response)                │
+             │--------------------------------------------------------│
+             │ • Validates current_question                          │
+             │ • Calls agent.evaluate_response(response)             │
+             │ • Builds feedback string                              │
+             │ • Calls agent.ask_question() for next question        │
+             │ • Updates global current_question                     │
+             │ • Returns feedback + next question                    │
+             └────────────────────────────────────────────────────────┘
+                                         │
+                                         ▼
+             ┌────────────────────────────────────────────────────────┐
+             │          InterviewAgent.evaluate_response()            │
+             │--------------------------------------------------------│
+             │ • Dummy scoring logic: length(response) % 10 + 1       │
+             │ • Calculates: strengths, weaknesses, suggestions       │
+             │ • Returns evaluation dict                              │
+             └────────────────────────────────────────────────────────┘
+                                         │
+                                         ▼
+                     ┌──────────────────────────────────────────────┐
+                     │       feedback_output textbox displays:      │
+                     │        • Score                               │
+                     │        • Strengths                           │
+                     │        • Weaknesses                          │
+                     │        • Suggestions                         │
+                     │        • Next question                       │
+                     └──────────────────────────────────────────────┐
+                                         │
+                             User continues answering
+                                         │
+                                         ▼
+                     ┌──────────────────────────────────────────────┐
+                     │              Loop Continues                   │
+                     └──────────────────────────────────────────────┘
